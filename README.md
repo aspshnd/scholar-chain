@@ -342,6 +342,12 @@ Stellar Testnet
 CCDLJSBTUKEC6UA2IKY7R2DNFVNSKTPE7SPLBECSXZRYT6XZRZ673JKP
 ```
 
+### Transaction Hash
+
+```text
+https://stellar.expert/explorer/testnet/tx/b838a8a886b04bf9deeb8ff4e0913009c4ca81b605bfb99221d0613feed78486
+```
+
 ---
 
 ## 🔮 Future Improvements
