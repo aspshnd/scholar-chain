@@ -20,49 +20,86 @@ const TX_TYPE = {
   verifier:   { label: 'Verifikator', color: 'var(--orange)' },
 };
 
+const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
 function TxRow({ tx }) {
   const type = TX_TYPE[tx.type] || { label: 'Event', color: 'var(--text-3)' };
   return (
     <div
       style={{
-        display: 'grid', gridTemplateColumns: '72px 100px 1fr auto',
-        gap: 12, padding: '13px 24px',
+        padding: '12px 20px',
         borderBottom: '1px solid var(--border)',
-        alignItems: 'center', transition: 'background 0.1s',
+        transition: 'background 0.1s',
       }}
       onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
-      <span className="mono" style={{ color: 'var(--text-3)', fontSize: 11 }}>
-        {timeAgo(tx.ts)}
-      </span>
-      <span style={{
-        fontSize: 11, fontWeight: 600, color: type.color,
-        background: `${type.color}15`, padding: '2px 9px',
-        borderRadius: 20, textAlign: 'center', whiteSpace: 'nowrap',
+      {/* Mobile layout: stack vertikal */}
+      <style>{`
+        @media (max-width: 768px) {
+          .tx-row-desktop { display: none !important; }
+          .tx-row-mobile  { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .tx-row-desktop { display: grid !important; }
+          .tx-row-mobile  { display: none !important; }
+        }
+      `}</style>
+
+      {/* Desktop: grid */}
+      <div className="tx-row-desktop" style={{
+        display: 'grid', gridTemplateColumns: '72px 100px 1fr auto',
+        gap: 12, alignItems: 'center',
       }}>
-        {type.label}
-      </span>
-      <div>
-        <div style={{ color: 'var(--text-1)', fontWeight: 500, fontSize: 13 }}>{tx.msg}</div>
-        <div style={{ color: 'var(--text-3)', fontSize: 11, marginTop: 1 }}>{tx.detail || 'Soroban Contract Event'}</div>
-      </div>
-      {tx.tx_hash ? (
-        <a
-          href={getTxUrl(tx.tx_hash)}
-          target="_blank"
-          rel="noreferrer"
-          className="mono"
-          style={{ color: 'var(--blue)', fontSize: 11, textDecoration: 'none' }}
-          onMouseEnter={e => e.target.style.textDecoration = 'underline'}
-          onMouseLeave={e => e.target.style.textDecoration = 'none'}
-          title="Lihat di Stellar Expert"
-        >
-          {tx.hash} ↗
-        </a>
-      ) : (
-        <span className="mono" style={{ color: 'var(--text-3)', fontSize: 11 }}>{tx.hash}</span>
+        <span className="mono" style={{ color: 'var(--text-3)', fontSize: 11 }}>
+          {timeAgo(tx.ts)}
+        </span>
+        <span style={{
+          fontSize: 11, fontWeight: 600, color: type.color,
+          background: `${type.color}15`, padding: '2px 9px',
+          borderRadius: 20, textAlign: 'center', whiteSpace: 'nowrap',
+        }}>
+          {type.label}
+        </span>
+        <div>
+          <div style={{ color: 'var(--text-1)', fontWeight: 500, fontSize: 13 }}>{tx.msg}</div>
+          <div style={{ color: 'var(--text-3)', fontSize: 11, marginTop: 1 }}>{tx.detail || 'Soroban Contract Event'}</div>
+        </div>
+        {tx.tx_hash ? (
+          <a href={getTxUrl(tx.tx_hash)} target="_blank" rel="noreferrer" className="mono"
+            style={{ color: 'var(--blue)', fontSize: 11, textDecoration: 'none' }}
+            onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+            onMouseLeave={e => e.target.style.textDecoration = 'none'}
+          >{tx.hash} ↗</a>
+        ) : (
+          <span className="mono" style={{ color: 'var(--text-3)', fontSize: 11 }}>{tx.hash}</span>
       )}
+      </div>
+
+      {/* Mobile: card style */}
+      <div className="tx-row-mobile" style={{
+        flexDirection: 'column', gap: 6,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: type.color,
+            background: `${type.color}15`, padding: '2px 10px',
+            borderRadius: 20,
+          }}>
+            {type.label}
+          </span>
+          <span className="mono" style={{ color: 'var(--text-3)', fontSize: 11 }}>
+            {timeAgo(tx.ts)}
+          </span>
+        </div>
+        <div style={{ color: 'var(--text-1)', fontWeight: 500, fontSize: 13 }}>{tx.msg}</div>
+        {tx.tx_hash && (
+          <a href={getTxUrl(tx.tx_hash)} target="_blank" rel="noreferrer"
+            style={{ color: 'var(--blue)', fontSize: 11, fontFamily: 'monospace' }}>
+            {tx.hash} ↗
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -76,8 +113,11 @@ export default function Overview({ connected, publicKey, showToast }) {
 
   useEffect(() => {
     fetchStats();
-    fetchTxLog();
   }, []);
+
+  useEffect(() => {
+    if (publicKey) fetchTxLog();
+  }, [publicKey]);
 
   async function fetchStats() {
     setLoadingStats(true); setError(null);
@@ -95,7 +135,7 @@ export default function Overview({ connected, publicKey, showToast }) {
   async function fetchTxLog() {
     setLoadingTx(true);
     try {
-      const txs = await getContractTransactions(30);
+      const txs = await getContractTransactions(publicKey, 30);
       setTxLog(txs);
     } catch (e) {
       console.error('Horizon error:', e);
@@ -113,7 +153,7 @@ export default function Overview({ connected, publicKey, showToast }) {
     <div>
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <div style={{ position: 'relative', overflow: 'hidden', padding: '80px 48px 72px', borderBottom: '1px solid var(--border)' }}>
+      <div className="hero-section" style={{ position: 'relative', overflow: 'hidden', padding: '80px 48px 72px', borderBottom: '1px solid var(--border)' }}>
 
         {/* Grid background */}
         <div style={{
@@ -179,7 +219,7 @@ export default function Overview({ connected, publicKey, showToast }) {
       </div>
 
       {/* ── CONTENT ──────────────────────────────────────────────── */}
-      <div style={{ padding: '40px 48px' }}>
+      <div className="page-content" style={{ padding: '40px 48px' }}>
 
         {!connected && (
           <div style={{ marginBottom: 24 }}>
@@ -196,7 +236,7 @@ export default function Overview({ connected, publicKey, showToast }) {
         )}
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 36 }}>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 36 }}>
           {loadingStats ? (
             Array(5).fill(0).map((_, i) => (
               <div key={i} style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
@@ -231,8 +271,11 @@ export default function Overview({ connected, publicKey, showToast }) {
             }
           />
 
-          {/* Table header */}
-          <div style={{
+          {/* Table header - desktop only */}
+          <style>{`
+            @media (max-width: 768px) { .tx-table-header { display: none !important; } }
+          `}</style>
+          <div className="tx-table-header" style={{
             display: 'grid', gridTemplateColumns: '72px 100px 1fr auto',
             gap: 12, padding: '8px 24px',
             fontSize: 11, fontWeight: 600, color: 'var(--text-3)',
