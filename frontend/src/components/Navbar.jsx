@@ -161,9 +161,8 @@ export default function Navbar({ contractId }) {
                   borderRadius: 12,
                   fontSize: 16,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? 'var(--purple)' : 'var(--gray-700)',
-                  background: isActive ? 'var(--purple-dim)' : 'transparent',
-                  borderLeft: `3px solid ${isActive ? 'var(--purple)' : 'transparent'}`,
+                  color: isActive ? 'var(--gray-700)' : 'var(--gray-700)',
+                  background: isActive ? 'var(--gray-200)' : 'transparent',
                   textDecoration: 'none',
                   transition: 'all 0.15s',
                 })}
