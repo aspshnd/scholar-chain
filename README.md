@@ -20,7 +20,7 @@ By leveraging Stellar’s fast and low-cost blockchain infrastructure, ScholarCh
 ---
 
 ## 🚀 Live Demo
-Akses aplikasi web kami di sini: https://scholar-chain-8scsecxe8-muhammad-aseps-projects.vercel.app/
+Akses aplikasi web kami di sini: https://scholar-chain-ebon.vercel.app/
 
 ## 🎯 Project Vision
 
