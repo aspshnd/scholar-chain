@@ -76,3 +76,11 @@ input, select, textarea { font-family: 'Inter', sans-serif; font-size: 14px; }
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 0.7; }
 }
+
+.nav-mobile { display: none !important; }
+.nav-desktop { display: flex !important; }
+ 
+@media (max-width: 768px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile  { display: flex !important; }
+}
