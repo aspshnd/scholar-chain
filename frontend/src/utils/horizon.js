@@ -1,51 +1,61 @@
 const HORIZON_URL = 'https://horizon-testnet.stellar.org'
-const CONTRACT_ID = 'GAHICSMD2MXGE2I3JWA6DEMX5RGHJBYZOT32OUIUMMXA5BUKDQJVA3X5'
 
-// Mapping fungsi contract → tipe log
-const FN_TYPE_MAP = {
-  create_grant:        { type: 'grant',      label: 'Grant Baru' },
-  register_recipient:  { type: 'registered', label: 'Daftar' },
-  verify_and_disburse: { type: 'disbursed',  label: 'Dicairkan/Ditolak' },
-  add_verifier:        { type: 'verifier',   label: 'Verifikator' },
-  remove_verifier:     { type: 'verifier',   label: 'Verifikator' },
-  initialize:          { type: 'grant',      label: 'Init' },
-  close_grant:         { type: 'grant',      label: 'Grant Ditutup' },
-}
+export async function getContractTransactions(walletAddress, limit = 30) {
+  if (!walletAddress) return []
 
-export async function getContractTransactions(limit = 30) {
   try {
-    const url = `${HORIZON_URL}/accounts/${CONTRACT_ID}/operations?limit=${limit}&order=desc&include_failed=false`
+    const url = `${HORIZON_URL}/accounts/${walletAddress}/operations?limit=${limit}&order=desc&include_failed=false`
     const res  = await fetch(url)
     if (!res.ok) throw new Error('Horizon error: ' + res.status)
     const data = await res.json()
-
     const records = data._embedded?.records || []
 
     return records
       .filter(op => op.type === 'invoke_host_function')
       .map(op => {
-        // Coba ambil nama fungsi dari parameters
-        const fnName = op.parameters?.[0]?.value || ''
-        const mapped = Object.entries(FN_TYPE_MAP).find(([key]) =>
-          fnName.toLowerCase().includes(key.toLowerCase())
-        )
-
-        const typeInfo = mapped?.[1] || { type: 'grant', label: 'Transaksi' }
+        const fnParam  = op.parameters?.[1]
+        const fnName   = fnParam?.type === 'Sym' ? decodeSymbol(fnParam.value) : 'unknown'
+        const typeInfo = mapFnToType(fnName)
 
         return {
-          id:     op.id,
-          ts:     new Date(op.created_at).getTime() / 1000,
-          type:   typeInfo.type,
-          msg:    typeInfo.label + ' — ' + (op.source_account?.slice(0, 8) + '...' || ''),
-          detail: `Ledger #${op.transaction?.ledger || op.ledger || ''}`,
-          hash:   op.transaction_hash?.slice(0, 8) || op.id?.slice(0, 8),
+          id:      op.id,
+          ts:      new Date(op.created_at).getTime() / 1000,
+          type:    typeInfo.type,
+          msg:     typeInfo.msg,
+          detail:  `${walletAddress.slice(0, 8)}... · ${fnName}`,
+          hash:    op.transaction_hash?.slice(0, 8),
           tx_hash: op.transaction_hash,
         }
       })
   } catch (e) {
     console.error('Horizon fetch error:', e)
-    return []
+    throw e
   }
+}
+
+function decodeSymbol(b64) {
+  try {
+    const bin      = atob(b64)
+    const bytes    = Uint8Array.from(bin, c => c.charCodeAt(0))
+    const len      = (bytes[4] << 24) | (bytes[5] << 16) | (bytes[6] << 8) | bytes[7]
+    const strBytes = bytes.slice(8, 8 + len)
+    return new TextDecoder().decode(strBytes)
+  } catch (_) {
+    return 'unknown'
+  }
+}
+
+function mapFnToType(fnName) {
+  const map = {
+    verify_and_disburse: { type: 'disbursed',  msg: 'Verifikasi & pencairan dana' },
+    register_recipient:  { type: 'registered', msg: 'Pendaftaran penerima baru' },
+    create_grant:        { type: 'grant',       msg: 'Program beasiswa dibuat' },
+    add_verifier:        { type: 'verifier',    msg: 'Verifikator ditambahkan' },
+    remove_verifier:     { type: 'verifier',    msg: 'Verifikator dihapus' },
+    initialize:          { type: 'grant',       msg: 'Contract diinisialisasi' },
+    close_grant:         { type: 'grant',       msg: 'Grant ditutup' },
+  }
+  return map[fnName] || { type: 'grant', msg: `Transaksi: ${fnName}` }
 }
 
 export function getTxUrl(txHash) {
