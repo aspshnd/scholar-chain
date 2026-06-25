@@ -3,6 +3,8 @@ import { Card, CardHeader, Input, Select, Button, Alert, Spinner } from '../comp
 import { formatXLM, formatIPK } from '../utils/constants';
 import { getAllGrants, registerRecipient, signAndSubmit } from '../utils/soroban';
 
+
+
 export default function Register({ publicKey, isConnected, showToast }) {
   const [form, setForm]       = useState({ wallet: '', nim: '', name: '', grant_id: '', ipk: '', krs_hash: '' });
   const [errors, setErrors]   = useState({});
@@ -69,7 +71,6 @@ export default function Register({ publicKey, isConnected, showToast }) {
   };
 
   return (
-    <div>
       <div style={{ padding:'40px 48px' }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.8px', color: 'var(--black)', marginBottom: 6 }}>
@@ -79,7 +80,7 @@ export default function Register({ publicKey, isConnected, showToast }) {
             Data yang dikirim akan tersimpan permanen di blockchain dan tidak dapat diubah.
           </p>
         </div>
-      </div>
+      {/* </div> */}
 
       {!isConnected && (
         <div style={{ marginBottom: 20 }}>
@@ -87,11 +88,10 @@ export default function Register({ publicKey, isConnected, showToast }) {
         </div>
       )}
 
-      <div style={{ maxWidth: 680 }}>
         <Card>
           <CardHeader title="Formulir Pendaftaran" subtitle="Semua field wajib diisi" />
-          <div style={{ padding: '16px 44px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+          <div style={{ padding: '16px 20px', display: 'grid', gap: 14 }}>
             <Input
               label="Alamat Wallet Stellar"
               placeholder="G... (56 karakter)"
@@ -133,8 +133,7 @@ export default function Register({ publicKey, isConnected, showToast }) {
             <Input label="IPK (skala 4.00)" type="number" step="0.01" min="0" max="4.00" placeholder="cth: 3.75" value={form.ipk} onChange={e => set('ipk', e.target.value)} error={errors.ipk} />
 
             <Input label="Hash Dokumen KRS" placeholder="sha256:..." value={form.krs_hash} onChange={e => set('krs_hash', e.target.value)} error={errors.krs_hash} hint="SHA-256 dari file KRS semester terakhir" />
-
-          </div>
+          </div>    
 
           {status === 'success' && <div style={{ padding: '0 20px 16px' }}><Alert type="success">{msg}</Alert></div>}
           {status === 'error'   && <div style={{ padding: '0 20px 16px' }}><Alert type="error">{msg}</Alert></div>}
@@ -149,6 +148,5 @@ export default function Register({ publicKey, isConnected, showToast }) {
           </div>
         </Card>
       </div>
-    </div>
   );
 }
