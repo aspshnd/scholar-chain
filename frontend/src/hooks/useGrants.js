@@ -8,9 +8,10 @@ import {
   nativeToScVal,
   scValToNative,
 } from "@stellar/stellar-sdk";
+import { CONTRACT_ID } from "../utils/soroban";
 
 const RPC_URL     = "https://soroban-testnet.stellar.org";
-const CONTRACT_ID = import.meta.env.VITE_CONTRACT_ID;
+// const CONTRACT_ID = import.meta.env.VITE_CONTRACT_ID;
 const server      = new rpc.Server(RPC_URL);
 
 async function callView(fnName, args = [], publicKey) {
