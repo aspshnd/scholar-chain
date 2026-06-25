@@ -109,7 +109,6 @@ export default function Verify({ publicKey, isConnected, showToast }) {
   };
 
   return (
-    <div>
       <div style={{ padding:'40px 48px' }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.3px', color: 'var(--text-1)', marginBottom: 4 }}>
@@ -119,7 +118,6 @@ export default function Verify({ publicKey, isConnected, showToast }) {
             Hanya verifikator terdaftar yang dapat menyetujui pencairan. Dana langsung dikirim ke wallet penerima.
           </p>
         </div>
-      </div>
 
       {!isConnected && (
         <div style={{ marginBottom: 20 }}>
@@ -135,8 +133,8 @@ export default function Verify({ publicKey, isConnected, showToast }) {
             title="Proses Verifikasi"
             subtitle={isConnected ? `Verifikator: ${publicKey?.slice(0,8)}...` : 'Wallet belum terconnect'}
           />
-          <div style={{ padding: '16px 44px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
+          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* <div> */}
               <Input
                 label="NIM Mahasiswa"
                 placeholder="cth: 2021001234"
@@ -149,7 +147,7 @@ export default function Verify({ publicKey, isConnected, showToast }) {
                   <Spinner size={12} /> Mencari di blockchain...
                 </div>
               )}
-            </div>
+            {/* </div> */}
 
             {/* Preview data penerima */}
             {found && (
