@@ -115,7 +115,7 @@ export function CardHeader({ title, subtitle, action }) {
   return (
     <div style={{
       display:'flex', alignItems:'center', justifyContent:'space-between',
-      padding:'16px 44px', borderBottom:'1px solid var(--gray-100)',
+      padding:'16px 25px', borderBottom:'1px solid var(--gray-100)',
       flexWrap:'wrap', gap:'24px 40px',
     }}>
       <div>
